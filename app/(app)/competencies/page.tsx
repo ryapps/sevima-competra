@@ -1,13 +1,20 @@
-import { CompetencyMobileRow, DataTable, type DataTableColumn } from "@/components/product";
+import Link from "next/link";
+
+import { CompetencyForm, type CompetencyOption } from "@/components/competency-form";
 import { PlusIcon } from "@/components/icons";
-import { EmptyState } from "@/components/product";
+import { CompetencyMobileRow, DataTable, EmptyState, type DataTableColumn } from "@/components/product";
 import { PageHeader, Screen } from "@/components/screen";
-import { Button, StatusBadge } from "@/components/ui";
+import { InlineAlert, StatusBadge } from "@/components/ui";
 import { requireProfile } from "@/lib/auth";
 import { deriveCompetencies, type CompetencyView } from "@/lib/skill-gap";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function CompetenciesPage() {
+export default async function CompetenciesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ edit?: string }>;
+}) {
+  const { edit } = await searchParams;
   const profile = await requireProfile();
   const teacher = profile.role === "teacher";
   const supabase = await createClient();
@@ -34,13 +41,27 @@ export default async function CompetenciesPage() {
       { key: "gap", header: "Selisih", align: "right" as const, render: (row: CompetencyView) => <span className="tabular-nums">{row.gap ? `-${row.gap}` : "—"}</span> },
       { key: "status", header: "Status", render: (row: CompetencyView) => <StatusBadge status={row.status} /> },
     ] : []),
-    ...(teacher ? [{ key: "action", header: "Aksi", align: "right" as const, render: () => <button className="h-11 text-sm font-semibold text-[var(--primary)]">Edit</button> }] : []),
+    ...(teacher ? [{
+      key: "action",
+      header: "Aksi",
+      align: "right" as const,
+      render: (row: CompetencyView) => (
+        <Link className="inline-flex h-11 items-center text-sm font-semibold text-[var(--primary)] hover:underline" href={`/competencies?edit=${row.id}#competency-form`}>Edit</Link>
+      ),
+    }] : []),
   ];
+  const competencyOptions: CompetencyOption[] = competencies.map((item) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description ?? "",
+    industryTarget: item.target,
+  }));
+  const initialCompetency = teacher ? competencyOptions.find((item) => item.id === edit) : undefined;
+  const invalidEdit = teacher && Boolean(edit) && !initialCompetency;
 
   return (
     <Screen>
       <PageHeader
-        action={teacher ? <Button><PlusIcon className="size-4" />Tambah kompetensi</Button> : undefined}
         description={teacher ? "Kelola target industri yang menjadi acuan penilaian siswa." : "Bandingkan nilai praktikmu dengan target industri pada setiap kompetensi."}
         eyebrow={teacher ? "Data kompetensi" : "Rekam kompetensi"}
         title="Kompetensi"
@@ -50,11 +71,23 @@ export default async function CompetenciesPage() {
         <EmptyState description="Daftar kompetensi belum dapat dimuat. Muat ulang halaman untuk mencoba lagi." title="Gagal memuat kompetensi" />
       ) : (
         <>
+      {invalidEdit ? (
+        <div className="mt-6">
+          <InlineAlert variant="error">Kompetensi yang ingin diedit tidak ditemukan. Pilih kembali dari daftar.</InlineAlert>
+        </div>
+      ) : teacher ? (
+        <CompetencyForm
+          competencies={competencyOptions}
+          initialCompetency={initialCompetency}
+          key={initialCompetency?.id ?? "new"}
+        />
+      ) : null}
+
       <p className="mt-6 text-xs font-medium text-[var(--muted)]" role="status">Menampilkan {competencies.length} kompetensi</p>
 
       <div className="mt-3 hidden md:block"><DataTable caption="Daftar kompetensi" columns={columns} emptyMessage="Belum ada kompetensi." rows={competencies} /></div>
       <div className="mt-3 border-y border-[var(--border)] bg-[var(--surface)] md:hidden">
-        {competencies.map((item) => <CompetencyMobileRow action={teacher ? <button className="h-11 text-sm font-semibold text-[var(--primary)]">Edit kompetensi</button> : undefined} gap={teacher ? undefined : item.gap} key={item.id} name={item.name} note={teacher ? undefined : item.note} score={teacher ? undefined : item.score} status={teacher ? undefined : item.status} target={item.target} />)}
+        {competencies.map((item) => <CompetencyMobileRow action={teacher ? <Link className="inline-flex h-11 items-center text-sm font-semibold text-[var(--primary)] hover:underline" href={`/competencies?edit=${item.id}#competency-form`}>Edit kompetensi</Link> : undefined} gap={teacher ? undefined : item.gap} key={item.id} name={item.name} note={teacher ? undefined : item.note} score={teacher ? undefined : item.score} status={teacher ? undefined : item.status} target={item.target} />)}
       </div>
         </>
       )}

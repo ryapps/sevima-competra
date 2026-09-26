@@ -8,12 +8,13 @@ import type { AppRole } from "@/lib/auth";
 
 const studentItems = [
   { href: "/dashboard", label: "Dashboard", icon: DashboardIcon },
+  { href: "/tasks", label: "Tugas", icon: AssessmentIcon },
   { href: "/competencies", label: "Kompetensi", icon: CompetencyIcon },
   { href: "/portfolio", label: "Portofolio", icon: PortfolioIcon },
 ];
 
 const teacherItems = [
-  { href: "/teacher/assessment", label: "Penilaian", icon: AssessmentIcon },
+  { href: "/teacher/assessment", label: "Tugas & penilaian", icon: AssessmentIcon },
   { href: "/competencies", label: "Kompetensi", icon: CompetencyIcon },
 ];
 
@@ -28,10 +29,11 @@ export function AppNavigation({ role, mobile = false }: { role: AppRole; mobile?
   return (
     <nav
       aria-label="Navigasi utama"
-      className={mobile ? `grid gap-1 ${items.length === 3 ? "grid-cols-3" : "grid-cols-2"}` : "grid gap-1"}
+      className={mobile ? `grid gap-1 ${items.length === 4 ? "grid-cols-4" : "grid-cols-2"}` : "grid gap-1"}
     >
       {items.map((item) => {
-        const active = isActive(pathname, item.href);
+        const workflowRoute = pathname.startsWith("/tasks/") || pathname.startsWith("/submissions/");
+        const active = isActive(pathname, item.href) || (workflowRoute && item.href === (role === "teacher" ? "/teacher/assessment" : "/tasks"));
         const Icon = item.icon;
         return (
           <Link
