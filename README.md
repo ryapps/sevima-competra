@@ -6,12 +6,12 @@ Competra adalah platform **Competency Intelligence untuk siswa SMK** yang memban
 
 ### Siswa
 
-- **Email:** `siswa@competra.id`
+- **Email:** `siswa@competra.test`
 - **Password:** `DemoSiswa123!`
 
 ### Guru
 
-- **Email:** `guru@competra.id`
+- **Email:** `guru@competra.test`
 - **Password:** `DemoGuru123!`
 
 ## Alur Testing yang Disarankan
@@ -21,7 +21,7 @@ Competra adalah platform **Competency Intelligence untuk siswa SMK** yang memban
 Gunakan akun guru:
 
 ```text
-Email: guru@competra.id
+Email: guru@competra.test
 Password: DemoGuru123!
 ```
 
@@ -40,7 +40,7 @@ Lakukan pengujian berikut:
 Logout dari akun guru, lalu gunakan akun siswa:
 
 ```text
-Email: siswa@competra.id
+Email: siswa@competra.test
 Password: DemoSiswa123!
 ```
 
