@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { PortfolioForm } from "@/components/portfolio-form";
 import { EmptyState, PortfolioItem } from "@/components/product";
 import { PageHeader, Screen, SectionHeader } from "@/components/screen";
 import { requireProfile } from "@/lib/auth";
+import { safeEvidenceUrl } from "@/lib/evidence";
 import { createClient } from "@/lib/supabase/server";
 
 const dateFormatter = new Intl.DateTimeFormat("id-ID", {
@@ -11,13 +13,7 @@ const dateFormatter = new Intl.DateTimeFormat("id-ID", {
 });
 
 function safeExternalUrl(value: string | null) {
-  if (!value) return undefined;
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:" ? value : undefined;
-  } catch {
-    return undefined;
-  }
+  return safeEvidenceUrl(value) ?? undefined;
 }
 
 export default async function PortfolioPage() {
@@ -58,7 +54,7 @@ export default async function PortfolioPage() {
 
   return (
     <Screen>
-      <PageHeader description="Simpan tautan proyek sebagai bukti penerapan kompetensi praktikmu." eyebrow="Bukti praktik" title="Portofolio" />
+      <PageHeader description="Simpan proyek di sini, lalu kirim ke tugas praktik. Proyek baru memengaruhi kesiapan role setelah dinilai guru." eyebrow="Bukti praktik" title="Portofolio" action={<Link href="/tasks" className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--primary)] hover:underline">Kirim ke tugas praktik →</Link>} />
 
       {queryFailed ? (
         <div className="mt-8">

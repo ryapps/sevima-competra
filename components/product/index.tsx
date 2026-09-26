@@ -72,7 +72,7 @@ export function CompetencyMobileRow({ name, score, target, status, gap, note, ac
         {status ? <StatusBadge status={status} /> : null}
       </div>
       <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-        <div><dt className="text-xs text-[var(--muted)]">Target</dt><dd className="mt-0.5 font-medium tabular-nums">{target}</dd></div>
+        <div><dt className="text-xs text-[var(--muted)]">Acuan sekolah</dt><dd className="mt-0.5 font-medium tabular-nums">{target}</dd></div>
         {status ? <div><dt className="text-xs text-[var(--muted)]">Nilai</dt><dd className="mt-0.5 font-medium tabular-nums">{score ?? "—"}</dd></div> : null}
         {status ? <div><dt className="text-xs text-[var(--muted)]">Selisih</dt><dd className="mt-0.5 font-medium tabular-nums">{gap ? `-${gap}` : "—"}</dd></div> : null}
       </dl>

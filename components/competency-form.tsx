@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 
 import {
   saveCompetency,
@@ -41,11 +41,16 @@ export function CompetencyForm({
     values: initialValues,
     revision: 0,
   });
-  const [values, setValues] = useState<CompetencyValues>(initialValues);
+  return <CompetencyFormFields key={state.revision} competencies={competencies} state={state} formAction={formAction} pending={pending} />;
+}
 
-  useEffect(() => {
-    setValues(state.values);
-  }, [state.values]);
+function CompetencyFormFields({ competencies, state, formAction, pending }: {
+  competencies: CompetencyOption[];
+  state: CompetencyState;
+  formAction: (form: FormData) => void;
+  pending: boolean;
+}) {
+  const [values, setValues] = useState<CompetencyValues>(state.values);
 
   function chooseCompetency(id: string) {
     setValues(valuesFromCompetency(competencies.find((item) => item.id === id)));
@@ -63,7 +68,7 @@ export function CompetencyForm({
     >
       <div className="mb-5">
         <h2 className="text-lg font-semibold leading-7" id="competency-form-title">Tambah atau edit kompetensi</h2>
-        <p className="mt-1 text-sm text-[var(--muted)]">Target industri menjadi acuan nilai dan perhitungan skill gap siswa.</p>
+        <p className="mt-1 text-sm text-[var(--muted)]">Acuan sekolah digunakan pada profil kompetensi. Target role industri dihitung terpisah.</p>
       </div>
 
       <form action={formAction} className="grid gap-5" noValidate>
@@ -100,7 +105,7 @@ export function CompetencyForm({
             helper="0–100"
             id="industry-target"
             inputMode="numeric"
-            label="Target industri"
+            label="Acuan sekolah"
             max={100}
             min={0}
             name="industryTarget"

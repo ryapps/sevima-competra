@@ -39,7 +39,7 @@ const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 function isHttpUrl(value: string) {
   try {
     const url = new URL(value);
-    return (url.protocol === "http:" || url.protocol === "https:") && Boolean(url.hostname);
+    return value.length <= 2048 && url.href.length <= 2048 && !/\s/.test(value) && !url.username && !url.password && (url.protocol === "http:" || url.protocol === "https:") && Boolean(url.hostname);
   } catch {
     return false;
   }
@@ -74,10 +74,10 @@ export async function createPortfolio(
     fieldErrors.projectUrl = "Isi minimal satu URL proyek atau URL bukti.";
   }
   if (values.projectUrl && !isHttpUrl(values.projectUrl)) {
-    fieldErrors.projectUrl = "URL proyek harus diawali http:// atau https://.";
+    fieldErrors.projectUrl = "Gunakan URL http/https tanpa spasi atau kredensial, maksimal 2048 karakter.";
   }
   if (values.evidenceUrl && !isHttpUrl(values.evidenceUrl)) {
-    fieldErrors.evidenceUrl = "URL bukti harus diawali http:// atau https://.";
+    fieldErrors.evidenceUrl = "Gunakan URL http/https tanpa spasi atau kredensial, maksimal 2048 karakter.";
   }
   if (values.competencyIds.length === 0) {
     fieldErrors.competencyIds = "Pilih minimal satu kompetensi.";
@@ -95,6 +95,10 @@ export async function createPortfolio(
       revision,
     };
   }
+
+  // Persist the same normalized URLs browsers open (including IDN hostnames).
+  if (values.projectUrl) values.projectUrl = new URL(values.projectUrl).href;
+  if (values.evidenceUrl) values.evidenceUrl = new URL(values.evidenceUrl).href;
 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();

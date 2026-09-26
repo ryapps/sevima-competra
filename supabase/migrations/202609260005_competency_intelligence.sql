@@ -143,6 +143,67 @@ begin
 end;
 $$;
 
+-- Private validator for canonical HTTP(S) URLs; clients cannot bypass it by writing
+-- a portfolio directly. URL paths remain opaque and are never fetched by this RPC.
+create function public.valid_evidence_url(p_url text) returns boolean
+language plpgsql immutable set search_path = '' as $$
+declare
+  v_parts text[];
+  v_authority text;
+  v_host text;
+  v_port text;
+  v_label text;
+  v_address inet;
+begin
+  if p_url is null or char_length(p_url) not between 1 and 2048
+    or p_url ~ '[[:space:][:cntrl:]]' or position(chr(92) in p_url) > 0 then
+    return false;
+  end if;
+  v_parts := regexp_match(p_url, '^https?://([^/?#]+)([/?#].*)?$', 'i');
+  if v_parts is null then return false; end if;
+  v_authority := v_parts[1];
+  if position('@' in v_authority) > 0 then return false; end if;
+
+  if left(v_authority, 1) = '[' then
+    v_parts := regexp_match(v_authority, '^\[([0-9A-Fa-f:.]+)\](:([0-9]+))?$');
+    if v_parts is null then return false; end if;
+    v_host := v_parts[1];
+    v_port := v_parts[3];
+    begin
+      v_address := v_host::inet;
+    exception when invalid_text_representation then return false;
+    end;
+    if family(v_address) <> 6 or masklen(v_address) <> 128 then return false; end if;
+  else
+    v_parts := regexp_match(v_authority, '^([^:]+)(:([0-9]+))?$');
+    if v_parts is null then return false; end if;
+    v_host := regexp_replace(v_parts[1], '\.$', '');
+    v_port := v_parts[3];
+    if char_length(v_host) not between 1 and 253 then return false; end if;
+    if v_host ~ '(^|\.)[0-9]+$' then
+      -- Canonical IPv4 has exactly four decimal octets; reject malformed numeric hosts.
+      if v_host !~ '^[0-9]{1,3}(\.[0-9]{1,3}){3}$' then return false; end if;
+      begin
+        v_address := v_host::inet;
+      exception when invalid_text_representation then return false;
+      end;
+      if family(v_address) <> 4 or masklen(v_address) <> 32 then return false; end if;
+    else
+      foreach v_label in array string_to_array(v_host, '.') loop
+        if char_length(v_label) not between 1 and 63
+          or v_label !~ '^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?$' then return false; end if;
+      end loop;
+    end if;
+  end if;
+  if v_port is not null then
+    if char_length(v_port) > 5 then return false; end if;
+    if v_port::integer not between 0 and 65535 then return false; end if;
+  end if;
+  return true;
+end;
+$$;
+revoke all on function public.valid_evidence_url(text) from public, anon, authenticated;
+
 create function public.submit_portfolio(p_task_id uuid, p_portfolio_id uuid) returns uuid
 language plpgsql security definer set search_path = '' as $$
 declare
@@ -167,8 +228,8 @@ begin
     where id = p_portfolio_id and student_id = auth.uid() for update;
   if not found then raise exception using errcode = '42501', message = 'OWNED_PORTFOLIO_REQUIRED'; end if;
   if (v_project.project_url is null and v_project.evidence_url is null)
-    or (v_project.project_url is not null and (v_project.project_url !~* '^https?://[^[:space:]/?#]+([/?#][^[:space:]]*)?$' or char_length(v_project.project_url) > 2048))
-    or (v_project.evidence_url is not null and (v_project.evidence_url !~* '^https?://[^[:space:]/?#]+([/?#][^[:space:]]*)?$' or char_length(v_project.evidence_url) > 2048)) then
+    or (v_project.project_url is not null and not public.valid_evidence_url(v_project.project_url))
+    or (v_project.evidence_url is not null and not public.valid_evidence_url(v_project.evidence_url)) then
     raise exception using errcode = '22023', message = 'INVALID_EVIDENCE_URL';
   end if;
   insert into public.submissions(task_id,student_id,portfolio_id,title,description,project_url,evidence_url)
@@ -271,6 +332,11 @@ from (values
   ('30000000-0000-0000-0000-000000000002'::uuid,80,'Perbaiki layout proyek pada lebar 375 px dan desktop tanpa scroll horizontal.'),
   ('30000000-0000-0000-0000-000000000003'::uuid,75,'Tambahkan validasi form dan interaksi DOM; sertakan langkah uji pada README.'),
   ('30000000-0000-0000-0000-000000000004'::uuid,70,'Rapikan riwayat commit dan dokumentasikan alur branch serta cara menjalankan proyek.')
-) v(id,target,practice) join public.competencies c on c.id = v.id;
+) v(id,target,practice) join public.competencies c on c.id = v.id
+-- Never publish a partial benchmark that would inflate readiness on a custom/empty dataset.
+where (select count(*) from public.competencies where id in (
+  '30000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002',
+  '30000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000004'
+)) = 4;
 
 commit;

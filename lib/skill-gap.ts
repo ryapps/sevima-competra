@@ -11,6 +11,10 @@ export type AssessmentSource = {
   competencyId: string;
   score: number;
   note: string | null;
+  submissionId?: string | null;
+  taskTitle?: string | null;
+  reviewedAt?: string | null;
+  reviewerName?: string | null;
 };
 
 export type CompetencyView = CompetencySource & {
@@ -18,6 +22,10 @@ export type CompetencyView = CompetencySource & {
   note: string;
   status: CompetencyStatus;
   gap: number;
+  submissionId: string | null;
+  taskTitle: string | null;
+  reviewedAt: string | null;
+  reviewerName: string | null;
 };
 
 export function deriveCompetencies(
@@ -37,6 +45,10 @@ export function deriveCompetencies(
       ...competency,
       score,
       note: assessment?.note ?? "",
+      submissionId: assessment?.submissionId ?? null,
+      taskTitle: assessment?.taskTitle ?? null,
+      reviewedAt: assessment?.reviewedAt ?? null,
+      reviewerName: assessment?.reviewerName ?? null,
       status,
       gap: score === null ? 0 : Math.max(competency.target - score, 0),
     };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 
 import {
   createPortfolio,
@@ -24,13 +24,17 @@ const initialState: PortfolioState = { values: emptyValues, revision: 0 };
 
 export function PortfolioForm({ competencies }: { competencies: CompetencyOption[] }) {
   const [state, formAction, pending] = useActionState(createPortfolio, initialState);
-  const [values, setValues] = useState<PortfolioValues>(emptyValues);
-  const [open, setOpen] = useState(false);
+  return <PortfolioFormFields key={state.revision} competencies={competencies} state={state} formAction={formAction} pending={pending} />;
+}
 
-  useEffect(() => {
-    setValues(state.values);
-    if (state.message) setOpen(true);
-  }, [state.values, state.message]);
+function PortfolioFormFields({ competencies, state, formAction, pending }: {
+  competencies: CompetencyOption[];
+  state: PortfolioState;
+  formAction: (form: FormData) => void;
+  pending: boolean;
+}) {
+  const [values, setValues] = useState<PortfolioValues>(state.values);
+  const [open, setOpen] = useState(Boolean(state.message));
 
   function updateText(field: Exclude<keyof PortfolioValues, "competencyIds">, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -90,6 +94,7 @@ export function PortfolioForm({ competencies }: { competencies: CompetencyOption
             id="project-url"
             label="URL proyek"
             name="projectUrl"
+            maxLength={2048}
             onChange={(event) => updateText("projectUrl", event.target.value)}
             placeholder="https://…"
             type="url"
@@ -102,6 +107,7 @@ export function PortfolioForm({ competencies }: { competencies: CompetencyOption
             id="evidence-url"
             label="URL bukti"
             name="evidenceUrl"
+            maxLength={2048}
             onChange={(event) => updateText("evidenceUrl", event.target.value)}
             placeholder="https://…"
             type="url"
