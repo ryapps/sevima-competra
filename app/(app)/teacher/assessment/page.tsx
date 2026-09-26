@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { CompetencyIcon } from "@/components/icons";
 import { PageHeader, Screen } from "@/components/screen";
 import { Button, InlineAlert, InputField, SelectField, StatusBadge, TextareaField } from "@/components/ui";
 import { requireProfile } from "@/lib/auth";
@@ -10,7 +11,7 @@ export default async function AssessmentPage() {
   return (
     <Screen>
       <PageHeader
-        action={<Link className="inline-flex h-10 items-center rounded-[var(--radius-medium)] border border-[var(--border)] bg-white px-4 text-sm font-semibold hover:bg-slate-50" href="/competencies">Kelola kompetensi</Link>}
+        action={<Link className="inline-flex h-10 items-center gap-2 rounded-[var(--radius-medium)] border border-[var(--border)] bg-white px-4 text-sm font-semibold shadow-[var(--raised-shadow)] hover:border-slate-400 hover:bg-slate-50" href="/competencies"><CompetencyIcon className="size-4" />Kelola kompetensi</Link>}
         description={`${profile.name}, pilih siswa dan kompetensi untuk mencatat nilai praktik terbaru.`}
         eyebrow="Workspace guru"
         title="Penilaian kompetensi"
@@ -23,7 +24,7 @@ export default async function AssessmentPage() {
             <SelectField defaultValue={demoCompetencies[0].id} id="competency" label="Kompetensi" name="competency" options={demoCompetencies.map((item) => ({ label: item.name, value: item.id }))} required />
           </div>
 
-          <section className="border-y border-[var(--border)] bg-slate-50 px-4 py-4" aria-label="Konteks penilaian">
+          <section className="rounded-[var(--radius-medium)] border border-[var(--border)] bg-slate-50 px-4 py-4" aria-label="Konteks penilaian">
             <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <div><dt className="text-xs text-[var(--muted)]">Target industri</dt><dd className="mt-1 font-semibold tabular-nums">80</dd></div>
               <div><dt className="text-xs text-[var(--muted)]">Nilai saat ini</dt><dd className="mt-1 font-semibold">—</dd></div>

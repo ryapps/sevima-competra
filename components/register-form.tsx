@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { registerStudent, type RegisterState } from "@/app/actions/auth";
+import { ArrowRightIcon } from "@/components/icons";
 import { Button, InlineAlert, InputField } from "@/components/ui";
 
 const initialState: RegisterState = { values: { name: "", email: "" }, revision: 0 };
@@ -65,8 +66,8 @@ export function RegisterForm() {
       </Button>
       <p className="text-center text-sm text-[var(--muted)]">
         Sudah punya akun?{" "}
-        <Link className="font-semibold text-[var(--primary)] hover:underline" href="/login">
-          Masuk
+        <Link className="inline-flex items-center gap-0.5 font-semibold text-[var(--primary)] hover:underline" href="/login">
+          Masuk <ArrowRightIcon className="size-4" />
         </Link>
       </p>
     </form>

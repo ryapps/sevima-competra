@@ -1,4 +1,5 @@
 import { EmptyState } from "@/components/product";
+import { PlusIcon } from "@/components/icons";
 import { PageHeader, Screen } from "@/components/screen";
 import { Button, InputField, TextareaField } from "@/components/ui";
 import { requireProfile } from "@/lib/auth";
@@ -13,8 +14,9 @@ export default async function PortfolioPage() {
 
       <details className="group mt-6 border-y border-[var(--border)] bg-[var(--surface)] sm:rounded-[var(--radius-medium)] sm:border">
         <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between px-4 font-semibold text-[var(--primary)] sm:px-6">
-          Tambah proyek
-          <span aria-hidden="true" className="text-lg transition-transform group-open:rotate-45">+</span>
+          <span className="inline-flex items-center gap-2"><PlusIcon className="size-4" />Tambah proyek</span>
+          <span aria-hidden="true" className="text-xs font-medium text-[var(--muted)] group-open:hidden">Buka formulir</span>
+          <span aria-hidden="true" className="hidden text-xs font-medium text-[var(--muted)] group-open:inline">Tutup</span>
         </summary>
         <form className="grid gap-5 border-t border-[var(--border)] px-4 py-6 sm:px-6">
           <InputField id="title" label="Judul proyek" maxLength={120} name="title" placeholder="Contoh: Website profil UMKM" required />

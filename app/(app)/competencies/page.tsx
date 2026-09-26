@@ -1,4 +1,5 @@
 import { CompetencyMobileRow, DataTable, type DataTableColumn } from "@/components/product";
+import { PlusIcon } from "@/components/icons";
 import { PageHeader, Screen } from "@/components/screen";
 import { Button, SelectField, StatusBadge } from "@/components/ui";
 import { requireProfile } from "@/lib/auth";
@@ -22,7 +23,7 @@ export default async function CompetenciesPage() {
   return (
     <Screen>
       <PageHeader
-        action={teacher ? <Button>Tambah kompetensi</Button> : undefined}
+        action={teacher ? <Button><PlusIcon className="size-4" />Tambah kompetensi</Button> : undefined}
         description={teacher ? "Kelola target industri yang menjadi acuan penilaian siswa." : "Bandingkan nilai praktikmu dengan target industri pada setiap kompetensi."}
         eyebrow={teacher ? "Data kompetensi" : "Rekam kompetensi"}
         title="Kompetensi"
@@ -31,7 +32,7 @@ export default async function CompetenciesPage() {
       <div className="mt-6 max-w-xs">
         <SelectField defaultValue="all" id="status-filter" label="Filter status" options={[{ label: "Semua status", value: "all" }, { label: "Kompeten", value: "competent" }, { label: "Skill Gap", value: "gap" }, { label: "Belum dinilai", value: "unassessed" }]} />
       </div>
-      <p className="mt-5 text-xs font-medium text-[var(--muted)]">Menampilkan {demoCompetencies.length} kompetensi</p>
+      <p className="mt-5 text-xs font-medium text-[var(--muted)]" role="status">Menampilkan {demoCompetencies.length} kompetensi</p>
 
       <div className="mt-3 hidden md:block"><DataTable caption="Daftar kompetensi" columns={columns} emptyMessage="Belum ada kompetensi." rows={demoCompetencies} /></div>
       <div className="mt-3 border-y border-[var(--border)] bg-[var(--surface)] md:hidden">

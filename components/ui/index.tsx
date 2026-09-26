@@ -21,8 +21,8 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const buttonVariants: Record<ButtonVariant, string> = {
-  primary: "border-transparent bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-blue-800",
-  secondary: "border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-slate-50",
+  primary: "border-transparent bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--raised-shadow)] hover:bg-blue-800",
+  secondary: "border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--raised-shadow)] hover:border-slate-400 hover:bg-slate-50",
   ghost: "border-transparent bg-transparent text-[var(--primary)] hover:bg-blue-50",
   destructive: "border-transparent bg-[var(--destructive)] text-white hover:bg-red-800",
 };
@@ -47,7 +47,7 @@ export function Button({
       {...props}
       aria-busy={loading || undefined}
       className={classes(
-        "inline-flex shrink-0 items-center justify-center gap-2 rounded-[var(--radius-medium)] border font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex shrink-0 items-center justify-center gap-2 rounded-[var(--radius-medium)] border font-semibold transition-[background-color,border-color,color] disabled:cursor-not-allowed disabled:opacity-50",
         buttonVariants[variant],
         buttonSizes[size],
         className,
@@ -90,7 +90,7 @@ function FieldFrame({ id, label, helper, error, required, children }: FieldFrame
 }
 
 const fieldClassName =
-  "w-full rounded-[var(--radius-medium)] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--foreground)] transition-colors placeholder:text-[var(--muted)] hover:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:opacity-70 aria-[invalid=true]:border-[var(--destructive)]";
+  "w-full rounded-[var(--radius-medium)] border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--foreground)] shadow-[var(--raised-shadow)] transition-[border-color,box-shadow] placeholder:text-slate-400 hover:border-slate-400 focus:border-[var(--primary)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:opacity-70 aria-[invalid=true]:border-[var(--destructive)]";
 
 type InputFieldProps = InputHTMLAttributes<HTMLInputElement> & {
   id: string;
@@ -210,7 +210,8 @@ const statusContent: Record<CompetencyStatus, { label: string; className: string
 export function StatusBadge({ status }: { status: CompetencyStatus }) {
   const content = statusContent[status];
   return (
-    <span className={classes("inline-flex h-6 items-center rounded-[var(--radius-small)] border px-2 text-xs font-medium", content.className)}>
+    <span className={classes("inline-flex h-6 items-center gap-1.5 rounded-[var(--radius-small)] border px-2 text-xs font-medium", content.className)}>
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-current opacity-70" />
       {content.label}
     </span>
   );
@@ -227,7 +228,7 @@ const alertClasses: Record<AlertVariant, string> = {
 export function InlineAlert({ variant, children }: { variant: AlertVariant; children: ReactNode }) {
   return (
     <div
-      className={classes("rounded-[var(--radius-medium)] border px-3 py-3 text-sm", alertClasses[variant])}
+      className={classes("rounded-[var(--radius-medium)] border border-l-[3px] px-3 py-3 text-sm", alertClasses[variant])}
       role={variant === "error" ? "alert" : "status"}
     >
       {children}

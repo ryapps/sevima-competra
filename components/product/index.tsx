@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { ArrowRightIcon, ExternalIcon } from "@/components/icons";
 import { Button, type CompetencyStatus, StatusBadge } from "@/components/ui";
 
 function classes(...values: Array<string | false | null | undefined>) {
@@ -96,19 +97,22 @@ export function SkillSummary({
 }: SkillSummaryProps) {
   const populated = percentage !== undefined && totalCount > 0;
   return (
-    <section className="rounded-[var(--radius-large)] border border-[var(--border)] bg-[var(--surface)] p-6" aria-labelledby="skill-summary-title">
+    <section className="rounded-[var(--radius-large)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--raised-shadow)] sm:p-6" aria-labelledby="skill-summary-title">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
           <h2 className="text-lg font-semibold leading-7" id="skill-summary-title">Ringkasan kesiapan</h2>
           {populated ? (
             <>
-              <p className="mt-4 text-[32px] font-bold leading-10 tabular-nums">{percentage}%</p>
+              <p className="mt-4 text-[40px] font-bold leading-none tracking-[-0.04em] tabular-nums">{percentage}%</p>
               <p className="mt-1 text-sm text-[var(--muted)]">{competentCount} dari {totalCount} kompetensi memenuhi target.</p>
               <p className="mt-1 text-xs text-[var(--muted)]">{unassessedCount} kompetensi belum dinilai dan tetap masuk penyebut.</p>
+              <div aria-label={`${percentage}% kompetensi memenuhi target`} className="mt-5 h-1.5 max-w-md overflow-hidden rounded-full bg-slate-100" role="img">
+                <div className="h-full rounded-full bg-[var(--primary)]" style={{ width: `${Math.min(100, Math.max(0, percentage ?? 0))}%` }} />
+              </div>
             </>
           ) : <p className="mt-3 max-w-xl text-sm text-[var(--muted)]">{emptyMessage ?? "Belum ada kompetensi untuk dihitung."}</p>}
         </div>
-        <Link className="text-sm font-semibold text-[var(--primary)] hover:underline" href={href}>Lihat kompetensi</Link>
+        <Link className="inline-flex h-10 items-center gap-1 text-sm font-semibold text-[var(--primary)] hover:underline" href={href}>Lihat kompetensi <ArrowRightIcon className="size-4" /></Link>
       </div>
     </section>
   );
@@ -149,8 +153,8 @@ export function PortfolioItem({ title, description, date, competencies, projectU
       </div>
       {projectUrl || evidenceUrl ? (
         <div className="mt-4 flex flex-wrap gap-4 text-sm font-medium text-[var(--primary)]">
-          {projectUrl ? <a href={projectUrl} rel="noreferrer" target="_blank">Buka proyek ↗</a> : null}
-          {evidenceUrl ? <a href={evidenceUrl} rel="noreferrer" target="_blank">Lihat bukti ↗</a> : null}
+          {projectUrl ? <a className="inline-flex min-h-11 items-center gap-1" href={projectUrl} rel="noreferrer" target="_blank">Buka proyek <ExternalIcon className="size-4" /></a> : null}
+          {evidenceUrl ? <a className="inline-flex min-h-11 items-center gap-1" href={evidenceUrl} rel="noreferrer" target="_blank">Lihat bukti <ExternalIcon className="size-4" /></a> : null}
         </div>
       ) : null}
     </article>
