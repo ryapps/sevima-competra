@@ -1,5 +1,6 @@
 import { signIn } from "@/app/actions/auth";
 import { ArrowRightIcon } from "@/components/icons";
+import { PasswordField } from "@/components/password-field";
 import { Button, InlineAlert, InputField } from "@/components/ui";
 import Link from "next/link";
 
@@ -28,7 +29,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <div className="mt-6">{error ? <InlineAlert variant="error">{error}</InlineAlert> : success ? <InlineAlert variant="success">{success}</InlineAlert> : null}</div>
           <form action={signIn} className="mt-6 grid gap-4">
             <InputField autoComplete="email" id="email" label="Email" name="email" placeholder="nama@sekolah.id" required type="email" />
-            <InputField autoComplete="current-password" id="password" label="Kata sandi" name="password" required type="password" />
+            <PasswordField autoComplete="current-password" id="password" label="Kata sandi" name="password" required />
             <Button className="mt-2" size="mobile" type="submit">Masuk</Button>
           </form>
           <p className="mt-5 text-center text-sm text-[var(--muted)]">

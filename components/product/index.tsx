@@ -56,23 +56,27 @@ export function DataTable<Row extends { id: string }>({ caption, columns, rows, 
 
 type CompetencyMobileRowProps = {
   name: string;
-  score: number | null;
+  score?: number | null;
   target: number;
-  status: CompetencyStatus;
+  status?: CompetencyStatus;
+  gap?: number;
+  note?: string;
   action?: ReactNode;
 };
 
-export function CompetencyMobileRow({ name, score, target, status, action }: CompetencyMobileRowProps) {
+export function CompetencyMobileRow({ name, score, target, status, gap, note, action }: CompetencyMobileRowProps) {
   return (
     <article className="border-b border-[var(--border)] py-4 last:border-b-0">
       <div className="flex items-start justify-between gap-4">
         <h3 className="font-semibold text-[var(--foreground)]">{name}</h3>
-        <StatusBadge status={status} />
+        {status ? <StatusBadge status={status} /> : null}
       </div>
-      <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
-        <div><dt className="text-xs text-[var(--muted)]">Nilai</dt><dd className="mt-0.5 font-medium tabular-nums">{score ?? "—"}</dd></div>
+      <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
         <div><dt className="text-xs text-[var(--muted)]">Target</dt><dd className="mt-0.5 font-medium tabular-nums">{target}</dd></div>
+        {status ? <div><dt className="text-xs text-[var(--muted)]">Nilai</dt><dd className="mt-0.5 font-medium tabular-nums">{score ?? "—"}</dd></div> : null}
+        {status ? <div><dt className="text-xs text-[var(--muted)]">Selisih</dt><dd className="mt-0.5 font-medium tabular-nums">{gap ? `-${gap}` : "—"}</dd></div> : null}
       </dl>
+      {note ? <p className="mt-3 text-xs text-[var(--muted)]">Catatan: {note}</p> : null}
       {action ? <div className="mt-3">{action}</div> : null}
     </article>
   );
@@ -131,7 +135,7 @@ export function GapRow({ name, score, target, href }: GapRowProps) {
 
 type PortfolioItemProps = {
   title: string;
-  description: string;
+  description?: string;
   date: string;
   competencies: string[];
   projectUrl?: string;
@@ -144,7 +148,7 @@ export function PortfolioItem({ title, description, date, competencies, projectU
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div className="max-w-3xl">
           <h3 className="font-semibold">{title}</h3>
-          <p className="mt-1 text-sm text-[var(--muted)]">{description}</p>
+          {description ? <p className="mt-1 text-sm text-[var(--muted)]">{description}</p> : null}
           <ul className="mt-3 flex flex-wrap gap-2" aria-label="Kompetensi terkait">
             {competencies.map((competency) => <li className="rounded-[var(--radius-small)] border border-[var(--border)] px-2 py-0.5 text-xs" key={competency}>{competency}</li>)}
           </ul>

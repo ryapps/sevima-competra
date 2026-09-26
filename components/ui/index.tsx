@@ -97,19 +97,29 @@ type InputFieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   helper?: string;
   error?: string;
+  endAdornment?: ReactNode;
 };
 
-export function InputField({ id, label, helper, error, required, className, ...props }: InputFieldProps) {
+export function InputField({ id, label, helper, error, endAdornment, required, className, ...props }: InputFieldProps) {
+  const input = (
+    <input
+      {...props}
+      aria-describedby={helper || error ? `${id}-message` : undefined}
+      aria-invalid={Boolean(error)}
+      className={classes(fieldClassName, "h-10", endAdornment ? "pr-24" : undefined, className)}
+      id={id}
+      required={required}
+    />
+  );
+
   return (
     <FieldFrame error={error} helper={helper} id={id} label={label} required={required}>
-      <input
-        {...props}
-        aria-describedby={helper || error ? `${id}-message` : undefined}
-        aria-invalid={Boolean(error)}
-        className={classes(fieldClassName, "h-10", className)}
-        id={id}
-        required={required}
-      />
+      {endAdornment ? (
+        <div className="relative">
+          {input}
+          <div className="absolute inset-y-0 right-1 flex items-center">{endAdornment}</div>
+        </div>
+      ) : input}
     </FieldFrame>
   );
 }

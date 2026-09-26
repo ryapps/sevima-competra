@@ -1,51 +1,103 @@
-import { EmptyState } from "@/components/product";
-import { PlusIcon } from "@/components/icons";
-import { PageHeader, Screen } from "@/components/screen";
-import { Button, InputField, TextareaField } from "@/components/ui";
+import { PortfolioForm } from "@/components/portfolio-form";
+import { EmptyState, PortfolioItem } from "@/components/product";
+import { PageHeader, Screen, SectionHeader } from "@/components/screen";
 import { requireProfile } from "@/lib/auth";
-import { demoCompetencies } from "@/lib/demo-data";
+import { createClient } from "@/lib/supabase/server";
+
+const dateFormatter = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+
+function safeExternalUrl(value: string | null) {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:" ? value : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 export default async function PortfolioPage() {
-  await requireProfile("student");
+  const profile = await requireProfile("student");
+  const supabase = await createClient();
+  const [competenciesResult, portfoliosResult, relationshipsResult] = await Promise.all([
+    supabase.from("competencies").select("id,name").order("name"),
+    supabase
+      .from("portfolios")
+      .select("id,title,description,project_url,evidence_url,created_at")
+      .eq("student_id", profile.id)
+      .order("created_at", { ascending: false }),
+    supabase.from("portfolio_competencies").select("portfolio_id,competency_id"),
+  ]);
+
+  const queryFailed = competenciesResult.error || portfoliosResult.error || relationshipsResult.error;
+  const competencies = (competenciesResult.data ?? []).map((item) => ({ id: item.id, name: item.name }));
+  const competencyNames = new Map(competencies.map((item) => [item.id, item.name]));
+  const relationships = new Map<string, string[]>();
+
+  for (const item of relationshipsResult.data ?? []) {
+    const name = competencyNames.get(item.competency_id);
+    if (!name) continue;
+    const names = relationships.get(item.portfolio_id) ?? [];
+    names.push(name);
+    relationships.set(item.portfolio_id, names);
+  }
+
+  const portfolios = (portfoliosResult.data ?? []).map((item) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description ?? "",
+    projectUrl: safeExternalUrl(item.project_url),
+    evidenceUrl: safeExternalUrl(item.evidence_url),
+    createdAt: item.created_at,
+    competencies: (relationships.get(item.id) ?? []).sort((a, b) => a.localeCompare(b, "id")),
+  }));
 
   return (
     <Screen>
       <PageHeader description="Simpan tautan proyek sebagai bukti penerapan kompetensi praktikmu." eyebrow="Bukti praktik" title="Portofolio" />
 
-      <details className="group mt-6 border-y border-[var(--border)] bg-[var(--surface)] sm:rounded-[var(--radius-medium)] sm:border">
-        <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between px-4 font-semibold text-[var(--primary)] sm:px-6">
-          <span className="inline-flex items-center gap-2"><PlusIcon className="size-4" />Tambah proyek</span>
-          <span aria-hidden="true" className="text-xs font-medium text-[var(--muted)] group-open:hidden">Buka formulir</span>
-          <span aria-hidden="true" className="hidden text-xs font-medium text-[var(--muted)] group-open:inline">Tutup</span>
-        </summary>
-        <form className="grid gap-5 border-t border-[var(--border)] px-4 py-6 sm:px-6">
-          <InputField id="title" label="Judul proyek" maxLength={120} name="title" placeholder="Contoh: Website profil UMKM" required />
-          <TextareaField id="description" label="Deskripsi" maxLength={1000} name="description" placeholder="Jelaskan kontribusi dan hasil proyek…" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <InputField helper="Gunakan URL http atau https." id="project-url" label="URL proyek" name="projectUrl" placeholder="https://…" type="url" />
-            <InputField helper="Repo, dokumentasi, atau bukti lainnya." id="evidence-url" label="URL bukti" name="evidenceUrl" placeholder="https://…" type="url" />
-          </div>
-          <fieldset>
-            <legend className="text-sm font-medium">Kompetensi terkait <span className="text-[var(--destructive)]">*</span></legend>
-            <div className="mt-2 grid gap-2 sm:grid-cols-2">
-              {demoCompetencies.map((item) => (
-                <label className="flex min-h-11 items-center gap-3 border-b border-[var(--border)] py-2 text-sm" key={item.id}>
-                  <input className="size-4 accent-[var(--primary)]" name="competencyIds" type="checkbox" value={item.id} />
-                  {item.name}
-                </label>
-              ))}
+      {queryFailed ? (
+        <div className="mt-8">
+          <EmptyState description="Data portofolio belum dapat dimuat. Muat ulang halaman untuk mencoba lagi." title="Gagal memuat portofolio" />
+        </div>
+      ) : (
+        <>
+          {competencies.length ? (
+            <PortfolioForm competencies={competencies} />
+          ) : (
+            <div className="mt-6 border-y border-[var(--border)]">
+              <EmptyState description="Guru perlu menambahkan kompetensi sebelum proyek dapat ditautkan." title="Belum ada kompetensi" />
             </div>
-          </fieldset>
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <Button type="reset" variant="secondary">Bersihkan</Button>
-            <Button className="sm:w-auto" size="mobile" type="button">Simpan proyek</Button>
-          </div>
-        </form>
-      </details>
+          )}
 
-      <section className="mt-8 border-t border-[var(--border)]" aria-label="Daftar portofolio">
-        <EmptyState description="Tambahkan proyek yang menunjukkan kompetensi praktikmu." title="Belum ada bukti portofolio" />
-      </section>
+          <section className="mt-8" aria-labelledby="portfolio-list-title">
+            <SectionHeader
+              description={`${portfolios.length} proyek tersimpan sebagai bukti praktik.`}
+              id="portfolio-list-title"
+              title="Bukti proyek"
+            />
+            <div className="mt-3 border-t border-[var(--border)]">
+              {portfolios.length ? portfolios.map((item) => (
+                <PortfolioItem
+                  competencies={item.competencies}
+                  date={dateFormatter.format(new Date(item.createdAt))}
+                  description={item.description}
+                  evidenceUrl={item.evidenceUrl}
+                  key={item.id}
+                  projectUrl={item.projectUrl}
+                  title={item.title}
+                />
+              )) : (
+                <EmptyState description="Tambahkan proyek yang menunjukkan kompetensi praktikmu." title="Belum ada bukti portofolio" />
+              )}
+            </div>
+          </section>
+        </>
+      )}
     </Screen>
   );
 }

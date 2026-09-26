@@ -5,6 +5,7 @@ import { useActionState } from "react";
 
 import { registerStudent, type RegisterState } from "@/app/actions/auth";
 import { ArrowRightIcon } from "@/components/icons";
+import { PasswordField } from "@/components/password-field";
 import { Button, InlineAlert, InputField } from "@/components/ui";
 
 const initialState: RegisterState = { values: { name: "", email: "" }, revision: 0 };
@@ -38,7 +39,7 @@ export function RegisterForm() {
         required
         type="email"
       />
-      <InputField
+      <PasswordField
         autoComplete="new-password"
         error={state.fieldErrors?.password}
         helper="Minimal 8 karakter."
@@ -48,9 +49,8 @@ export function RegisterForm() {
         minLength={8}
         name="password"
         required
-        type="password"
       />
-      <InputField
+      <PasswordField
         autoComplete="new-password"
         error={state.fieldErrors?.confirmPassword}
         id="confirmPassword"
@@ -59,7 +59,6 @@ export function RegisterForm() {
         minLength={8}
         name="confirmPassword"
         required
-        type="password"
       />
       <Button className="mt-2" loading={pending} size="mobile" type="submit">
         Daftar sebagai siswa
